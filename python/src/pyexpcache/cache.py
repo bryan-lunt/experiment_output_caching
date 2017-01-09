@@ -1,8 +1,9 @@
 import sys
 import os
 import hashlib
+import shutil
 
-class MyHash(object):
+class MyCache(object):
     md5_prog_map = { ("posix","darwin"):"md5",
                     ("posix","linux2"):"md5sum",
 
@@ -21,11 +22,12 @@ class MyHash(object):
         self.my_digest = None
 
     def add_file_input(self,filename):
-        inputs.append(("file",filename))
+        self.inputs.append(("file",filename))
         self.my_digest = None
 
     def add_bytes_input(self,the_bytes):
-        inputs.append(("bytes",the_bytes))
+        self.inputs.append(("bytes",the_bytes))
+        self.my_digest = None
 
     def hash_inputs(self,blocksize=2**12):
         the_hash = hashlib.new(self.my_hash)
@@ -60,8 +62,10 @@ class MyHash(object):
         #TODO: make atomic.
         the_path = self.get_path()
         exists = self.check_exists()
+        if not exists:
+            os.makedirs(the_path)
 
-    def move_in(self,source_file,dest_file=None):
+    def copy_in(self,source_file,dest_file=None):
         """ does not yet handle directory structure """
         dest_name = dest_file if not (None is dest_file) else os.path.basename(source_file)
         shutil.copy(source_file,os.path.join(self.get_path(),dest_name))
